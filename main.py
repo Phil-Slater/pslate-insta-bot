@@ -2,12 +2,13 @@ import requests
 import json
 import os
 from datetime import datetime
+from datetime import date
+from datetime import timedelta
 from dotenv import load_dotenv
 import random
 from PIL import Image
 from io import BytesIO
 from instagrapi import Client
-
 
 load_dotenv()
 
@@ -17,10 +18,10 @@ SHOPIFY_API_SECRET = os.getenv("SHOPIFY_API_SECRET")
 IG_USERNAME = os.getenv("IG_USERNAME")
 IG_PWD = os.getenv("IG_PWD")
 
-current_date = datetime.now().strftime("%Y-%m-%d")
+current_date = date.today()
+# yesterday
+# current_date = current_date - timedelta(days=1)
 
-# bot = Client()
-# bot.login(IG_USERNAME, IG_PWD)
 
 url = f"https://pslatecustoms.myshopify.com/admin/api/2022-10/orders.json?status=unfilfilled&created_at_min={current_date}&fields=order_number,line_items,created_at"
 
@@ -33,7 +34,6 @@ res = requests.get(url=url, headers=headers)
 
 result = res.json()
 orders = []
-
 
 for order in result["orders"]:
     for item in order["line_items"]:
@@ -54,7 +54,7 @@ for order in result["orders"]:
                 orders.append(dict_to_append)
 
 print(
-    f"Number of paracord sleeved products ordered in past day: {len(orders)}")
+    f"Number of non-black paracord sleeved products ordered in past day: {len(orders)}")
 randomt_int = random.randint(0, len(orders)-1)
 print((json.dumps(orders[randomt_int], indent=4)))
 
@@ -75,9 +75,14 @@ with Image.open("template.png") as template_img:
     template_img.alpha_composite(rotated, offset)
     template_img = template_img.convert('RGB')
     os.chdir("images")
-   # template_img.save(f'{current_date}_image.jpg')
+    template_img.save(f'{current_date}_image.jpg')
 
 sleeving_colors = ", ".join(orders[randomt_int]["sleeving_colors"])
+
+hashtags = ["#pcmods", "#smallbusiness", "#gamingpc", "#paracord", "#modding", "#pcgaming", "#customcables", "#builtnotbought", "#customized", "#shopsmall", "#handmade", "#smallformfactor", "#small", "#sffpc", "#itx",
+            "#mini", "#sff", "#personalized", "#customized", "#pc", "#pcmr", "#pcenthusiast", "#sleevedcables", "#enthusiast", "#paracordsleeving", "#3dprinting", "#3dprints", "#corsair", "#silverstone", "#evga", "#coolermaster", "#nvidia", "#amd", "#tech", "#technology", "#diy", "#customerdesign", "#cablemanagement", "#pcbuild", "#cable", "#paracordcables", "#cableporn", "#gaming", "#tiny", "#handcrafted", "#customsleevedcables"]
+
+random_hashtags = ' '.join(random.sample(hashtags, 25))
 
 caption = f"""Cable of the day!
 Check out our sleeved cable of the day-- ordered today by one of our customers! This is a {orders[randomt_int]["product_name"]} designed with {sleeving_colors} paracord and {orders[randomt_int]["comb_color"].lower()} cable combs!
@@ -86,8 +91,10 @@ Check out our sleeved cable of the day-- ordered today by one of our customers! 
 .
 .
 .
-#hashtags #hashtag1 #hashtag2"""
+#pslate #pslatecustoms #cableoftheday {random_hashtags}"""
 
 print(f"\n{caption}")
 
-# bot.photo_upload(f'{current_date}_image.jpg', caption)
+bot = Client()
+bot.login(IG_USERNAME, IG_PWD)
+bot.photo_upload(f'{current_date}_image.jpg', caption)

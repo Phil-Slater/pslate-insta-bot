@@ -13,14 +13,14 @@ from instagrapi import Client
 load_dotenv()
 
 SHOPIFY_ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN")
-SHOPIFY_API_KEY = os.getenv("SHOPIFY_API_KEY")
-SHOPIFY_API_SECRET = os.getenv("SHOPIFY_API_SECRET")
+# SHOPIFY_API_KEY = os.getenv("SHOPIFY_API_KEY")
+# SHOPIFY_API_SECRET = os.getenv("SHOPIFY_API_SECRET")
 IG_USERNAME = os.getenv("IG_USERNAME")
 IG_PWD = os.getenv("IG_PWD")
 
 current_date = date.today()
 # yesterday
-# current_date = current_date - timedelta(days=1)
+#current_date = current_date - timedelta(days=1)
 
 
 url = f"https://pslatecustoms.myshopify.com/admin/api/2022-10/orders.json?status=unfilfilled&created_at_min={current_date}&fields=order_number,line_items,created_at"
@@ -40,6 +40,7 @@ for order in result["orders"]:
         dict_to_append = {}
         if "Paracord" in item["name"]:
             dict_to_append.update({"product_name": item["name"]})
+            dict_to_append.update({"order_number": order["order_number"]})
             colors = []
             for property in item["properties"]:
                 if "Color " in property["name"]:
@@ -58,9 +59,21 @@ print(
 randomt_int = random.randint(0, len(orders)-1)
 print((json.dumps(orders[randomt_int], indent=4)))
 
-rotation_angles = [0, 10, 20, 30, 40, 320, 330, 340, 350]
+rotation_angles = [0, 10, 10, 20, 30, 20, 30,
+                   40, 320, 330, 330, 340, 340, 350, 350]
 random_rotation_int = random.randint(0, len(rotation_angles)-1)
 print(f"Rotation angle: {rotation_angles[random_rotation_int]} degrees")
+
+while True:
+    if input("Continue? y to continue or r to re-roll: ") != "y":
+        randomt_int = random.randint(0, len(orders)-1)
+        random_rotation_int = random.randint(0, len(rotation_angles)-1)
+        print((json.dumps(orders[randomt_int], indent=4)))
+        print(
+            f"Rotation angle: {rotation_angles[random_rotation_int]} degrees")
+    else:
+        break
+
 
 res = requests.get(orders[randomt_int]["design"])
 
@@ -85,6 +98,7 @@ hashtags = ["#pcmods", "#smallbusiness", "#gamingpc", "#paracord", "#modding", "
 random_hashtags = ' '.join(random.sample(hashtags, 25))
 
 caption = f"""Cable of the day!
+
 Check out our sleeved cable of the day-- ordered today by one of our customers! This is a {orders[randomt_int]["product_name"]} designed with {sleeving_colors} paracord and {orders[randomt_int]["comb_color"].lower()} cable combs!
 .
 .
